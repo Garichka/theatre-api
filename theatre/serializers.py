@@ -44,12 +44,17 @@ class PlayListSerializer(PlaySerializer):
 
 class TicketSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
-        data = Ticket.validate_ticket(
-            attrs["row"],
-            attrs["seat"],
-            attrs["performance"].theatre_hall,
-            ValidationError
+        performance = attrs.get("performance") or (
+            self.instance.performance if self.instance else None
         )
+
+        if performance:
+            Ticket.validate_ticket(
+                attrs.get("row"),
+                attrs.get("seat"),
+                performance.theatre_hall,
+                ValidationError
+            )
         return attrs
 
     class Meta:
@@ -71,7 +76,7 @@ class PerformanceListSerializer(PerformanceSerializer):
     play_title = serializers.CharField(source="play.title", read_only=True)
     theatre_hall_name = serializers.CharField(source="theatre_hall.name", read_only=True)
     theatre_hall_capacity = serializers.IntegerField(source="theatre_hall.capacity", read_only=True)
-    tickets_available = serializers.IntegerField(read_only=True) # Можна вирахувати в queryset
+    tickets_available = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Performance
