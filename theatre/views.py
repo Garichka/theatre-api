@@ -40,10 +40,25 @@ class TheatreHallViewSet(viewsets.ModelViewSet):
 
 
 class PlayViewSet(viewsets.ModelViewSet):
-    queryset = Play.objects.prefetch_related("genre", "actors")
+    queryset = Play.objects.prefetch_related("genres", "actors")
+
+    def get_queryset(self):
+        queryset = self.queryset
+        genres = self.request.query_params.get("genres")
+        actors = self.request.query_params.get("actors")
+
+        if genres:
+            genre_ids = [int(str_id) for str_id in genres.split(",")]
+            queryset = queryset.filter(genres__id__in=genre_ids)
+
+        if actors:
+            actor_ids = [int(str_id) for str_id in actors.split(",")]
+            queryset = queryset.filter(actors__id__in=actor_ids)
+
+        return queryset.distinct()
 
     def get_serializer_class(self):
-        if self.action == "list":
+        if self.action in ("list", "retrieve"):
             return PlayListSerializer
         return PlaySerializer
 
