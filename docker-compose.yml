@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: theatre_db_cont
+    environment:
+      - POSTGRES_DB=theatre_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: theatre_api_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=l(iKw0fmF&y1P{mD
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/theatre_db
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
