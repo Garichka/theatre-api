@@ -1,4 +1,6 @@
 import os
+import sys
+
 import environ
 from pathlib import Path
 
@@ -7,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = env('SECRET_KEY', default='test-secret-key-123')
 
 DEBUG = env('DEBUG')
 
@@ -63,9 +65,18 @@ WSGI_APPLICATION = 'theatre_config.wsgi.application'
 
 # Database
 
-DATABASES = {
-    'default': env.db(),
-}
+if "test" in sys.argv:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    }
+else:
+    DATABASES = {
+        'default': env.db(),
+    }
+
 
 
 # Password validation
